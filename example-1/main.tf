@@ -1,7 +1,44 @@
+############################################################################
+# providers
+############################################################################
+
 provider "aws" {
   region = "us-west-2"
 }
 
+############################################################################
+# data
+############################################################################
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
+############################################################################
+# variables
+############################################################################
+
+variable "server_port" {
+  description = "The port the server will use for HTTP requests"
+  type        = number
+  default     = 8080
+}
+
+output "alb_dns_name" {
+  value       = aws_lb.example.dns_name
+  description = "The public IP address of the web server"
+}
+
+############################################################################
+# resources
+############################################################################
 resource "aws_launch_configuration" "example" {
   image_id        = "ami-07eeacb3005b9beae"
   instance_type   = "t2.micro"
@@ -28,17 +65,6 @@ resource "aws_security_group" "instance" {
   }
 }
 
-variable "server_port" {
-  description = "The port the server will use for HTTP requests"
-  type        = number
-  default     = 8080
-}
-
-output "alb_dns_name" {
-  value       = aws_lb.example.dns_name
-  description = "The public IP address of the web server"
-}
-
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
   vpc_zone_identifier  = data.aws_subnets.default.ids
@@ -55,16 +81,6 @@ resource "aws_autoscaling_group" "example" {
   }
 }
 
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
 
 resource "aws_lb" "example" {
   name               = "terraform-asg-example"
