@@ -40,6 +40,39 @@ output "alb_dns_name" {
 # resources
 ############################################################################
 
+# networking
+
+resource "aws_security_group" "instance" {
+  name = "terraform-example-instance"
+  ingress {
+    from_port   = var.server_port
+    to_port     = var.server_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "alb" {
+  name = "terraform-example-alb"
+
+  # Allow inbound HTTP requests
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  # Allow all outbound requests
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# instances
+
 resource "aws_launch_configuration" "example" {
   image_id        = "ami-07eeacb3005b9beae"
   instance_type   = "t2.micro"
@@ -56,15 +89,7 @@ resource "aws_launch_configuration" "example" {
   }
 }
 
-resource "aws_security_group" "instance" {
-  name = "terraform-example-instance"
-  ingress {
-    from_port   = var.server_port
-    to_port     = var.server_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+# auto-scaling
 
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
@@ -81,6 +106,8 @@ resource "aws_autoscaling_group" "example" {
     propagate_at_launch = true
   }
 }
+
+# load-balancer
 
 resource "aws_lb" "example" {
   name               = "terraform-asg-example"
@@ -103,25 +130,6 @@ resource "aws_lb_listener" "http" {
       message_body = "404: page not found"
       status_code  = 404
     }
-  }
-}
-
-resource "aws_security_group" "alb" {
-  name = "terraform-example-alb"
-
-  # Allow inbound HTTP requests
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  # Allow all outbound requests
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
