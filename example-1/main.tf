@@ -41,6 +41,7 @@ output "alb_dns_name" {
 ############################################################################
 
 # networking
+############################################################################
 
 resource "aws_security_group" "instance" {
   name = "terraform-example-instance"
@@ -72,6 +73,7 @@ resource "aws_security_group" "alb" {
 }
 
 # instances
+############################################################################
 
 resource "aws_launch_configuration" "example" {
   image_id        = "ami-07eeacb3005b9beae"
@@ -90,6 +92,7 @@ resource "aws_launch_configuration" "example" {
 }
 
 # auto-scaling
+############################################################################
 
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
@@ -108,6 +111,7 @@ resource "aws_autoscaling_group" "example" {
 }
 
 # load-balancer
+############################################################################
 
 resource "aws_lb" "example" {
   name               = "terraform-asg-example"
