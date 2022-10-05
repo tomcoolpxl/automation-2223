@@ -39,6 +39,7 @@ output "alb_dns_name" {
 ############################################################################
 # resources
 ############################################################################
+
 resource "aws_launch_configuration" "example" {
   image_id        = "ami-07eeacb3005b9beae"
   instance_type   = "t2.micro"
@@ -80,7 +81,6 @@ resource "aws_autoscaling_group" "example" {
     propagate_at_launch = true
   }
 }
-
 
 resource "aws_lb" "example" {
   name               = "terraform-asg-example"
